@@ -1,0 +1,77 @@
+import numpy as np 
+import pandas as pd 
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+%matplotlib inline
+import matplotlib as mpl
+
+df = pd.read_csv("/content/diabetes2.csv")
+
+df.head()
+
+df.info()
+
+df.shape
+
+#histograms
+numerical_features = ['Glucose', 'BMI','Age']
+for feature in numerical_features:
+  plt.figure(figsize = (8,4))
+  sns.histplot(data= df ,x= feature , hue = 'Outcome' ,bins = 20, kde=True)
+  plt.title(f'Distribution of {feature} by Outcome')
+  plt.show()
+  
+
+#distribution of Outcome
+plt.figure(figsize = (6,4))
+sns.countplot(x= 'Outcome',data = df)
+plt.title('Distribution of Outcome')
+plt.show() 
+
+#Feature Engineering
+
+bins = [0,30,40,50,60, float('inf')]
+labels = ['0-29','30-39','40-49','50-59','60+']
+df['AgeGroup'] = pd.cut(df['Age'],bins=bins , labels= labels)
+
+label_mapping = {label : i for i, label in enumerate(labels)}
+df['AgeGroup'] = df['AgeGroup'].map(label_mapping)
+
+df['Age_BMI_Interact'] = df['Age'] * df['BMI']
+
+df['Insulin_log'] = np.log1p(df['Insulin'])
+
+
+df.head()
+
+#TRAIN TEST SPLIT 
+
+from sklearn.model_selection import train_test_split
+
+X = df.drop(columns=['Outcome'])
+y = df['Outcome']
+
+X_train, X_test,y_train, y_test = train_test_split(X, y,test_size= 0.2 , random_state=42)
+
+#NORMALIZATION
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_train = sc.fit_transform(X_train)
+x_test = sc.transform(X_test)
+
+#MODEL TRAIN AND EVALUATION
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score,classification_report
+
+model  = LogisticRegression()
+model.fit(X_train , y_train)
+
+#model prediction
+y_pred = model.predict(X_test)
+
+#model evaluation
+accuracy = accuracy_score(y_test,y_pred)
+report = classification_report(y_test,y_pred)
+print(f"Accuracy :{accuracy * 100:.2f}%")
+print(f"Classification Report :\n ",report)
