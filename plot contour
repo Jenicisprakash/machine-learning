@@ -1,0 +1,8 @@
+import numpy as np 
+import matplotlib.pyplot as plt 
+
+x,y =np.meshgrid(np.linspace(-2,2,100),np.linspace(-2,2,100))
+z=np.sin(x**2+y**2)
+
+plt.contour(x,y,z, cmap = "coolwarm")
+plt.show()
